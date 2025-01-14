@@ -5,6 +5,7 @@ const getExpenses = async (req, res) => {
     try {
         const { startDate, endDate, category, expBy, method} = req.body;
         let dateFilter = {};
+        let catFilter = '';
         if(startDate) {
             dateFilter = {
                 $gte: startDate
@@ -16,9 +17,12 @@ const getExpenses = async (req, res) => {
                 $lte: endDate
             }
         }
+        if(category) {
+            catFilter = { $in: category };
+        }
         const filters = { 
             ...(Object.keys(dateFilter).length ? {date: dateFilter}: undefined), 
-            ...(category ? {category} : undefined),
+            ...(catFilter ? {category: catFilter} : undefined),
             ...(expBy? {expBy}: undefined),
             ...(method ? {method} : undefined)
         }
