@@ -3,9 +3,10 @@ const Expense = require('../models/expenseModel');
 
 const getExpenses = async (req, res) => {
     try {
-        const { startDate, endDate, category, expBy, method} = req.body;
+        const { startDate, endDate, category, expBy, method, searchBy} = req.body;
         let dateFilter = {};
         let catFilter = '';
+        let searchFilter = '';
         if(startDate) {
             dateFilter = {
                 $gte: startDate
@@ -20,11 +21,15 @@ const getExpenses = async (req, res) => {
         if(category) {
             catFilter = { $in: category };
         }
+        if(searchBy) {
+            searchFilter =  [ { label: { $regex: searchBy, $options: "i" } }, { note: { $regex: searchBy, $options: "i" } } ]
+        }
         const filters = { 
             ...(Object.keys(dateFilter).length ? {date: dateFilter}: undefined), 
             ...(catFilter ? {category: catFilter} : undefined),
             ...(expBy? {expBy}: undefined),
-            ...(method ? {method} : undefined)
+            ...(method ? {method} : undefined),
+            ...(searchFilter ? {$or: searchFilter} : undefined)
         }
         const expenses = await Expense.find(filters).sort({ date: -1 });
         res.status(200).json(expenses);
